@@ -54,7 +54,7 @@ if [[ $(wc -w < ${SOURCE_DIR}/response.json) -le 2 ]]; then
   exit 0; 
 else 
   echo "*** DG found an issue in the code. See raw output below ***"
-  while read line; do echo $line; done < "${SOURCE_DIR}/response.json"
+  cat "${SOURCE_DIR}/response.json" | xargs printf '%b\n'
   exit 1; 
 fi
 
