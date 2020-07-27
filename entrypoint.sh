@@ -37,7 +37,7 @@ ${AWS_REGION}
 text
 EOF
 
-sh -c "echo 'Uploading Artifacts to S3'"
+sh -c "echo '=== Uploading Artifacts to S3 ==='"
 # Sync using our dedicated profile and suppress verbose messages.
 # All other flags are optional via the `args:` directive.
 sh -c "aws s3 sync ${SOURCE_DIR:-.} s3://${AWS_S3_BUCKET}/${DEST_DIR} \
@@ -45,10 +45,13 @@ sh -c "aws s3 sync ${SOURCE_DIR:-.} s3://${AWS_S3_BUCKET}/${DEST_DIR} \
               --no-progress \
               ${ENDPOINT_APPEND} --exclude '.git/*' --delete"
 
-sh -c "echo 'Running Analysis'"
-sh -c "aws lambda invoke --profile s3-sync-action --function-name 'DGDemo' response.json"
-sh -C "cat response.json"
-sh -C "if [[ $(wc -w < response.json) -le 2 ]]; then exit 0; else exit 1; fi"
+sh -c "echo '=== Running Analysis ==='"
+
+aws lambda invoke --profile s3-sync-action --function-name "DGDemo" "${SOURCE_DIR}/response.json"
+
+cat "${SOURCE_DIR}/response.json"
+
+if [[ $(wc -w < ${SOURCE_DIR}/response.json) -le 2 ]]; then exit 0; else exit 1; fi
 
 # Clear out credentials after we're done.
 # We need to re-run `aws configure` with bogus input instead of
