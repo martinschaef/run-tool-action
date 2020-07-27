@@ -49,9 +49,14 @@ sh -c "echo '=== Running Analysis ==='"
 
 aws lambda invoke --profile s3-sync-action --function-name "DGDemo" "${SOURCE_DIR}/response.json"
 
-cat "${SOURCE_DIR}/response.json"
-
-if [[ $(wc -w < ${SOURCE_DIR}/response.json) -le 2 ]]; then exit 0; else exit 1; fi
+if [[ $(wc -w < ${SOURCE_DIR}/response.json) -le 2 ]]; then 
+  echo "*** DG completed without findings ***"
+  exit 0; 
+else 
+  echo "*** DG found an issue in the code. See raw output below ***"
+  cat "${SOURCE_DIR}/response.json"
+  exit 1; 
+fi
 
 # Clear out credentials after we're done.
 # We need to re-run `aws configure` with bogus input instead of
