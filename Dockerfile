@@ -9,7 +9,6 @@ LABEL "com.github.actions.color"="green"
 ENV AWSCLI_VERSION='1.18.14'
 
 RUN pip install --quiet --no-cache-dir awscli==${AWSCLI_VERSION}
-RUN gem install octokit
 
 ADD entrypoint.sh /entrypoint.sh
 ADD comment.sh /comment.sh
