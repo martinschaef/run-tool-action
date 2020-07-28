@@ -17,6 +17,17 @@ if [ -z "$AWS_SECRET_ACCESS_KEY" ]; then
   exit 1
 fi
 
+if [ -z "$AWS_LAMBDA_NAME" ]; then
+  echo "AWS_LAMBDA_NAME is not set. Quitting."
+  exit 1
+fi
+
+if [ -z "$GITHUB_TOKEN" ]; then
+  echo "GITHUB_TOKEN is not set. Quitting."
+  exit 1
+fi
+
+
 # Default to us-west-2 if AWS_REGION not set.
 if [ -z "$AWS_REGION" ]; then
   AWS_REGION="us-west-2"
@@ -47,14 +58,16 @@ sh -c "aws s3 sync ${SOURCE_DIR:-.} s3://${AWS_S3_BUCKET}/${DEST_DIR} \
 
 sh -c "echo '=== Running Analysis ==='"
 
-aws lambda invoke --profile s3-sync-action --function-name "DGDemo" "${SOURCE_DIR}/response.json"
+aws lambda invoke --profile s3-sync-action --function-name "${AWS_LAMBDA_NAME}" "${SOURCE_DIR}/response.json"
 
 if [[ $(wc -w < ${SOURCE_DIR}/response.json) -le 2 ]]; then 
   echo "*** DG completed without findings ***"
+  ./comment.sh "*** DG completed without findings ***" true
   exit 0; 
 else 
   echo "*** DG found an issue in the code. See raw output below ***"
   cat "${SOURCE_DIR}/response.json" | xargs printf '%b\n'
+  ./comment.sh $(cat "${SOURCE_DIR}/response.json") true
   exit 1; 
 fi
 
